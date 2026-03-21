@@ -1,0 +1,1 @@
+export { QPPage as default } from './OtherPages';
