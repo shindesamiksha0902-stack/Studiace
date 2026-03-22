@@ -16,7 +16,6 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/marks', require('./routes/marks'));
 app.use('/api/burnout', require('./routes/burnout'));
 app.use('/api/auth', require('./routes/auth'));
-
 app.get('/api/health', (_, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 3001;
