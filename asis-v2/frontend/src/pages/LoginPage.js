@@ -16,11 +16,36 @@ export default function LoginPage() {
     login({ id: form.studentId, name: form.studentId });
   }
 
-  function handleSignup(e) {
-    e.preventDefault();
-    if (!form.firstName || !form.email || !form.password) { setErr('Fill in all required fields'); return; }
-    login({ id: form.email, name: form.firstName });
+  async function handleLogin(e) {
+  e.preventDefault();
+
+  if (!form.studentId || !form.password) {
+    setErr('Fill in Student ID and password');
+    return;
   }
+
+  try {
+    const res = await fetch('https://studiace-3.onrender.com/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId: form.studentId,
+        password: form.password
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Login failed');
+    }
+
+    login(data.user); // ✅ now only logs in if backend says OK
+
+  } catch (err) {
+    setErr(err.message);
+  }
+}
 
   return (
     <div className="auth-screen">
