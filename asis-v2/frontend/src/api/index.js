@@ -1,16 +1,18 @@
 // All backend calls in one place
 
-async function call(method, path, body) 
+async function call(method, path, body) {
   const BASE_URL = "https://studiace-1.onrender.com";
 
-async function call(method, path, body) {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${BASE_URL}/api${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
+
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+
+  if (!res.ok) throw new Error(data.error || "Request failed");
+
   return data;
 }
 
