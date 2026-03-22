@@ -53,7 +53,7 @@ export function ExamPage() {
 
       setResult(data); setStep(3);
     } catch(e) {
-      setError('Error: ' + e.message + '. Make sure your backend is running on port 3001.');
+      setError('Error: ' + e.message + '. Backend request failed.');
     } finally { clearInterval(iv); setLoading(false); }
   }
 
