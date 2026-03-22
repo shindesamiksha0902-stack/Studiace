@@ -3,7 +3,7 @@
 async function call(method, path, body) {
   const BASE_URL = "https://studiace-1.onrender.com";
 
-  const res = await fetch(`${BASE_URL}/api${path}`, {
+  const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
@@ -18,13 +18,35 @@ async function call(method, path, body) {
 
 // ── AI ────────────────────────────────────────────────────────────────────────
 export const AI = {
-  chat:         (messages, folders)                                      => call('POST', '/ai/chat',          { messages, folders }),
-  examStrategy: (folders, opts)                                          => call('POST', '/ai/exam-strategy', { folders, ...opts }),
-  generateQP:   (folders, selectedNotes, opts)                          => call('POST', '/ai/generate-qp',   { folders, selectedNotes, ...opts }),
-  checkAnswers: (questions, studentAnswers)                              => call('POST', '/ai/check-answers', { questions, studentAnswers }),
-  analyzeGaps:  (questionPaperText, imageBase64, imageType, folders, marksHistory) =>
-    call('POST', '/ai/analyze-gaps', { questionPaperText, imageBase64, imageType, folders, marksHistory }),
-  burnoutTips:  (checkin, score, workPct, history, folders)             => call('POST', '/ai/burnout-tips',  { checkin, score, workPct, history, folders }),
+  chat: (messages, folders) =>
+    call('POST', '/api/ai/chat', { messages, folders }),
+
+  examStrategy: (folders, opts) =>
+    call('POST', '/api/ai/exam-strategy', { folders, ...opts }),
+
+  generateQP: (folders, selectedNotes, opts) =>
+    call('POST', '/api/ai/generate-qp', { folders, selectedNotes, ...opts }),
+
+  checkAnswers: (questions, studentAnswers) =>
+    call('POST', '/api/ai/check-answers', { questions, studentAnswers }),
+
+  analyzeGaps: (questionPaperText, imageBase64, imageType, folders, marksHistory) =>
+    call('POST', '/api/ai/analyze-gaps', {
+      questionPaperText,
+      imageBase64,
+      imageType,
+      folders,
+      marksHistory
+    }),
+
+  burnoutTips: (checkin, score, workPct, history, folders) =>
+    call('POST', '/api/ai/burnout-tips', {
+      checkin,
+      score,
+      workPct,
+      history,
+      folders
+    }),
 };
 
 // ── Marks ─────────────────────────────────────────────────────────────────────
