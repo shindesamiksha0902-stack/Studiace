@@ -14,7 +14,7 @@ if (USE_GROQ) {
     const messages = [];
     if (system) messages.push({ role: 'system', content: system });
     messages.push({ role: 'user', content: prompt });
-    const res = await groq.chat.completions.create({ model: MODEL, messages, max_tokens: 4096 });
+    const res = await groq.chat.completions.create({ model: MODEL, messages, max_tokens: 1500 });
     return res.choices[0].message.content;
   };
   console.log('AI: Groq (' + MODEL + ')');
@@ -24,7 +24,7 @@ if (USE_GROQ) {
   const MODEL = 'claude-sonnet-4-5';
   callAI = async (prompt, system) => {
     const res = await ai.messages.create({
-      model: MODEL, max_tokens: 4096,
+      model: MODEL, max_tokens: 1500,
       ...(system ? { system } : {}),
       messages: [{ role: 'user', content: prompt }],
     });
@@ -53,7 +53,7 @@ function notesDigest(folders = []) {
     (f.subjects || []).map(s =>
       `  Subject: ${s.name}\n` +
       (s.notes || []).map(n =>
-        `    Note "${n.title || 'Untitled'}": ${stripHtml(n.content || '').substring(0, 300)}`
+        `    Note "${n.title || 'Untitled'}": ${stripHtml(n.content || '').substring(0, 100)}`
       ).join('\n')
     ).join('\n')
   ).join('\n');
@@ -61,26 +61,28 @@ function notesDigest(folders = []) {
 
 // ── POST /api/ai/chat  (Study Buddy) ─────────────────────────────────────────
 router.post('/chat', async (req, res) => {
+  console.log('→ /chat called');
+  const { messages, folders } = req.body;
+  if (!messages || !messages.length) return res.status(400).json({ error: 'messages required' });
+
+  const system = `You are Study Buddy, a warm encouraging AI tutor inside ASIS (AI Student Intelligence System). You have access to the student notes below. Be helpful, clear and use markdown formatting (bold, lists) naturally.\n\nSTUDENT NOTES:\n${notesDigest(folders)}`;
+
+  // Build conversation history as one prompt
+  const history = messages.map(m => `${m.role === 'user' ? 'Student' : 'Buddy'}: ${m.content}`).join('\n\n');
+  const prompt = `${history}\n\nBuddy:`;
+
   try {
-    const { messages } = req.body;
-
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: "Invalid messages" });
-    }
-
-    // 🔹 TEMP TEST RESPONSE (IMPORTANT)
-    return res.json({
-      reply: "Backend working ✅"
-    });
-
-  } catch (err) {
-    console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: "Server error" });
+    const reply = await callAI(prompt, system);
+    res.json({ reply: reply.replace(/^Buddy:\s*/i, '').trim() });
+  } catch (e) {
+    console.error('Chat error:', e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
 // ── POST /api/ai/exam-strategy ────────────────────────────────────────────────
 router.post('/exam-strategy', async (req, res) => {
+  console.log('→ /exam-strategy called');
   const { folders, examName, examDate, hoursPerDay, difficulty, syllabusText } = req.body;
   const daysLeft = examDate
     ? Math.max(1, Math.ceil((new Date(examDate) - new Date()) / 86400000))
@@ -167,6 +169,7 @@ STRICT RULES — you must follow all of these:
 
 // ── POST /api/ai/generate-qp ──────────────────────────────────────────────────
 router.post('/generate-qp', async (req, res) => {
+  console.log('→ /generate-qp called');
   const { folders, selectedNotes, qtype, difficulty, count, totalMarks, syllabusText } = req.body;
   const ctx = selectedNotes && selectedNotes.length
     ? selectedNotes.map(n => `[${n.subject}] ${n.title}: ${n.content}`).join('\n')
@@ -227,6 +230,7 @@ RULES:
 
 // ── POST /api/ai/check-answers ────────────────────────────────────────────────
 router.post('/check-answers', async (req, res) => {
+  console.log('→ /check-answers called');
   const { questions, studentAnswers } = req.body;
   const qa = questions.map((q, i) => ({
     number: q.number,
@@ -281,6 +285,7 @@ Return ONLY this exact JSON:
 
 // ── POST /api/ai/analyze-gaps ─────────────────────────────────────────────────
 router.post('/analyze-gaps', async (req, res) => {
+  console.log('→ /analyze-gaps called');
   const { questionPaperText, imageBase64, imageType, folders, marksHistory } = req.body;
   const marksCtx = marksHistory && marksHistory.length
     ? 'Student marks history: ' + marksHistory.map(m => `${m.subject}: ${m.pct}%`).join(', ')
@@ -351,6 +356,7 @@ Return ONLY valid JSON:
 
 // ── POST /api/ai/burnout-tips ─────────────────────────────────────────────────
 router.post('/burnout-tips', async (req, res) => {
+  console.log('→ /burnout-tips called');
   const { checkin, score, workPct, history, folders } = req.body;
   const trend = history && history.length >= 3
     ? `Recent 5 burnout scores: ${history.slice(-5).map(e => e.score + '%').join(', ')}`

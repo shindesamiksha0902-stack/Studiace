@@ -1,7 +1,7 @@
 // All backend calls in one place
 
 async function call(method, path, body) {
-  const BASE_URL = "https://studiace-1.onrender.com";
+  const BASE_URL = "https://studiace-3.onrender.com";
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
