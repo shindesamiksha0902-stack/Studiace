@@ -1,7 +1,10 @@
 // All backend calls in one place
 
+async function call(method, path, body) 
+  const BASE_URL = "https://studiace-1.onrender.com";
+
 async function call(method, path, body) {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
