@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Marks, Burnout } from './api';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { Burnout } from './api';
 
 const Ctx = createContext(null);
 
