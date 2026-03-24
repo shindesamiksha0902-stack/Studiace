@@ -4,7 +4,12 @@ import { Marks, Burnout } from './api';
 const Ctx = createContext(null);
 
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('msm_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
 
   // Notes stay in localStorage (no auth backend needed for demo)
   const [folders, setFolders] = useState(() =>
@@ -124,7 +129,10 @@ export function AppProvider({ children }) {
   };
 
   const login  = u  => setUser(u);
-  const logout = () => { setUser(null); setMarks([]); setBurnout([]); };
+  const logout = () => {
+    localStorage.removeItem('msm_session');
+    setUser(null); setMarks([]); setBurnout([]);
+  };
 
   return (
     <Ctx.Provider value={{
