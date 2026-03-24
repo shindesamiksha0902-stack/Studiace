@@ -1,52 +1,34 @@
-// All backend calls in one place
+// frontend/src/api/index.js
+// ── Points to your Render backend (not localhost) ─────────────────────────────
+
+const BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 async function call(method, path, body) {
-  const BASE_URL = "https://studiace-3.onrender.com";
-
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${BASE}/api${path}`, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
-
   const data = await res.json();
-
-  if (!res.ok) throw new Error(data.error || "Request failed");
-
+  if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
 
+// ── Auth ──────────────────────────────────────────────────────────────────────
+export const Auth = {
+  login:  (email, password)                          => call('POST', '/auth/login',  { email, password }),
+  signup: (firstName, lastName, email, college, year, password) =>
+                                                        call('POST', '/auth/signup', { firstName, lastName, email, college, year, password }),
+};
+
 // ── AI ────────────────────────────────────────────────────────────────────────
 export const AI = {
-  chat: (messages, folders) =>
-    call('POST', '/api/ai/chat', { messages, folders }),
-
-  examStrategy: (folders, opts) =>
-    call('POST', '/api/ai/exam-strategy', { folders, ...opts }),
-
-  generateQP: (folders, selectedNotes, opts) =>
-    call('POST', '/api/ai/generate-qp', { folders, selectedNotes, ...opts }),
-
-  checkAnswers: (questions, studentAnswers) =>
-    call('POST', '/api/ai/check-answers', { questions, studentAnswers }),
-
-  analyzeGaps: (questionPaperText, imageBase64, imageType, folders, marksHistory) =>
-    call('POST', '/api/ai/analyze-gaps', {
-      questionPaperText,
-      imageBase64,
-      imageType,
-      folders,
-      marksHistory
-    }),
-
-  burnoutTips: (checkin, score, workPct, history, folders) =>
-    call('POST', '/api/ai/burnout-tips', {
-      checkin,
-      score,
-      workPct,
-      history,
-      folders
-    }),
+  chat:         (messages, folders)                        => call('POST', '/ai/chat',          { messages, folders }),
+  examStrategy: (folders, opts)                            => call('POST', '/ai/exam-strategy',  { folders, ...opts }),
+  generateQP:   (folders, selectedNotes, opts)             => call('POST', '/ai/generate-qp',   { folders, selectedNotes, ...opts }),
+  checkAnswers: (questions, studentAnswers)                => call('POST', '/ai/check-answers',  { questions, studentAnswers }),
+  analyzeGaps:  (questionPaperText, folders, marksHistory) => call('POST', '/ai/analyze-gaps',  { questionPaperText, folders, marksHistory }),
+  burnoutTips:  (checkin, score, workPct, history, folders)=> call('POST', '/ai/burnout-tips',  { checkin, score, workPct, history, folders }),
 };
 
 // ── Marks ─────────────────────────────────────────────────────────────────────
@@ -59,15 +41,5 @@ export const Marks = {
 // ── Burnout ───────────────────────────────────────────────────────────────────
 export const Burnout = {
   getHistory:  uid        => call('GET',  `/burnout/${uid}`),
-  saveCheckin: (uid, data) => call('POST', `/burnout/${uid}`, data),
+  saveCheckin: (uid, data)=> call('POST', `/burnout/${uid}`, data),
 };
-
-// Named exports — match exactly how OtherPages.js calls them
-export const chatAI       = (messages, folders) => AI.chat(messages, folders);
-export const examStrategy = (folders, opts)     => AI.examStrategy(folders, opts);
-export const generateQP   = (folders, selectedNotes, opts) => AI.generateQP(folders, selectedNotes, opts);
-export const checkAnswers = (questions, studentAnswers)    => AI.checkAnswers(questions, studentAnswers);
-export const analyzeGaps  = (questionPaperText, imageBase64, imageType, folders, marksHistory) =>
-  AI.analyzeGaps(questionPaperText, imageBase64, imageType, folders, marksHistory);
-export const burnoutTips  = (checkin, score, workPct, history, folders) =>
-  AI.burnoutTips(checkin, score, workPct, history, folders);
